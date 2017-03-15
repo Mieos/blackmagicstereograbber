@@ -1,1 +1,1 @@
-# blackmagicstereograbber
+# BLACK MAGIC STEREO GRABBER
