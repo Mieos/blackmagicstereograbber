@@ -230,8 +230,6 @@ void VideoInputFromBlackMagic::runInput(){
 //A frame arrived
 HRESULT VideoInputFromBlackMagic::VideoInputFrameArrived(IDeckLinkVideoInputFrame* videoFrame, IDeckLinkAudioInputPacket* audioFrame){
 
-   //Here a good idea can be to ignore frames sometimes..
-
    if(!this->updating){
 
       this->updating = true;
@@ -253,9 +251,6 @@ HRESULT VideoInputFromBlackMagic::VideoInputFrameArrived(IDeckLinkVideoInputFram
       cv::Mat loadedImage;
       cv::Mat mat = cv::Mat(videoFrame->GetHeight(), videoFrame->GetWidth(), CV_8UC2, data, videoFrame->GetRowBytes());
       cv::cvtColor(mat, loadedImage, CV_YUV2BGR_UYVY);
-
-      imshow("debug", loadedImage);
-      cv::waitKey(100);
 
       cv::Mat loadedImageRight = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type());
       cv::Mat loadedImageLeft = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type()) ;
