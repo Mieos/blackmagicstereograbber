@@ -28,12 +28,12 @@ int main(int argc, char *argv[]){
 
       //Get the current image
       testInput->getFrames(cImageL, cImageR);
-
+      
       //SHOW results !
       cv::imshow("Left", cImageL);
       cv::imshow("Right", cImageR);
 
-      if(cv::waitKey(1)==1048603){
+      if(cv::waitKey(100)==1048603){
          endAsk=true;
       }
 

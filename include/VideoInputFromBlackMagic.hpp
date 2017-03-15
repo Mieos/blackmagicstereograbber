@@ -41,6 +41,7 @@ private:
 
    //Mutex
    std::mutex mtxImages;
+   bool updating;
 
 public:
 

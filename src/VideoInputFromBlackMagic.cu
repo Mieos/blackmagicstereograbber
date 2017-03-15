@@ -72,6 +72,7 @@ VideoInputFromBlackMagic::VideoInputFromBlackMagic(): m_refCount(1){
    this->running = false;
    this->initialized = false;
    this->initCuda = false;
+   this->updating = false;
 
 }
 
@@ -180,7 +181,7 @@ void VideoInputFromBlackMagic::runInput(){
       result = displayMode->GetName((const char**)&displayModeName);
 
       // Check display mode is supported with given options
-      result = g_deckLinkInput->DoesSupportVideoMode(bmdModeHD1080p30, bmdFormat8BitYUV, bmdDisplayModeColorspaceRec709, &displayModeSupported, NULL);
+      result = g_deckLinkInput->DoesSupportVideoMode(bmdModeHD1080p50, bmdFormat8BitYUV, bmdDisplayModeColorspaceRec709, &displayModeSupported, NULL);
 
       if (result != S_OK){
          fprintf(stdout,"Video Mode not supported : aborted\n");
@@ -199,7 +200,7 @@ void VideoInputFromBlackMagic::runInput(){
       g_deckLinkInput->SetCallback(this);
 
       //Enable the video input with the selected format
-      result = g_deckLinkInput->EnableVideoInput(bmdModeHD1080p30, bmdFormat8BitYUV, bmdDisplayModeColorspaceRec709);
+      result = g_deckLinkInput->EnableVideoInput(bmdModeHD1080p50, bmdFormat8BitYUV, bmdDisplayModeColorspaceRec709);
 
 
       if (result != S_OK)
@@ -231,45 +232,63 @@ HRESULT VideoInputFromBlackMagic::VideoInputFrameArrived(IDeckLinkVideoInputFram
 
    //Here a good idea can be to ignore frames sometimes..
 
-   if (!videoFrame){
+   if(!this->updating){
 
-      fprintf(stdout,"Update: No video frame\n");
-      return S_FALSE;
+      this->updating = true;
 
-   } 
+      if (!videoFrame){
 
-   void* data;
+         fprintf(stdout,"Update: No video frame\n");
+         return S_FALSE;
 
-   if (FAILED(videoFrame->GetBytes(&data))){
-      fprintf(stdout,"Fail obtaining the data from videoFrame\n");
-      return S_FALSE;
-   }
+      } 
 
-   cv::Mat loadedImage;
-   cv::Mat mat = cv::Mat(videoFrame->GetHeight(), videoFrame->GetWidth(), CV_8UC2, data, videoFrame->GetRowBytes());
-   cv::cvtColor(mat, loadedImage, CV_YUV2BGR_UYVY);
-   cv::Mat loadedImageRight = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type());
-   cv::Mat loadedImageLeft = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type()) ;
+      void* data;
 
-   if (!loadedImage.data){
-      fprintf(stdout,"No frame loaded from the video : mainImage will not be updated\n");
-   } else {
-
-      if(!this->separateFrames(&loadedImageLeft, &loadedImageRight, &loadedImage)){
-         fprintf(stdout,"Error while the separation of left and right frame\n");
+      if (FAILED(videoFrame->GetBytes(&data))){
+         fprintf(stdout,"Fail obtaining the data from videoFrame\n");
+         return S_FALSE;
       }
 
-      //Update the images
-      //Mutex here
-      this->mtxImages.lock();
-      this->currentImageLeft = loadedImageLeft.clone();
-      this->currentImageRight = loadedImageRight.clone();
-      this->initialized = true;
-      this->mtxImages.unlock();
+      cv::Mat loadedImage;
+      cv::Mat mat = cv::Mat(videoFrame->GetHeight(), videoFrame->GetWidth(), CV_8UC2, data, videoFrame->GetRowBytes());
+      cv::cvtColor(mat, loadedImage, CV_YUV2BGR_UYVY);
+
+      imshow("debug", loadedImage);
+      cv::waitKey(100);
+
+      cv::Mat loadedImageRight = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type());
+      cv::Mat loadedImageLeft = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type()) ;
+
+      if (!loadedImage.data){
+         fprintf(stdout,"No frame loaded from the video : mainImage will not be updated\n");
+      } else {
+
+         if(!this->separateFrames(&loadedImageLeft, &loadedImageRight, &loadedImage)){
+            fprintf(stdout,"Error while the separation of left and right frame\n");
+         }
+
+         //Update the images
+         //Mutex here
+         this->mtxImages.lock();
+         this->currentImageLeft = loadedImageLeft.clone();
+         this->currentImageRight = loadedImageRight.clone();
+         this->initialized = true;
+         this->mtxImages.unlock();
+
+
+      }
+
+      this->updating=false;
+
+      return S_OK;
+
+   } else {
+
+      return S_OK;
 
    }
 
-   return S_OK;
 
 }
 
