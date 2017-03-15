@@ -229,6 +229,8 @@ void VideoInputFromBlackMagic::runInput(){
 //A frame arrived
 HRESULT VideoInputFromBlackMagic::VideoInputFrameArrived(IDeckLinkVideoInputFrame* videoFrame, IDeckLinkAudioInputPacket* audioFrame){
 
+   //Here a good idea can be to ignore frames sometimes..
+
    if (!videoFrame){
 
       fprintf(stdout,"Update: No video frame\n");
@@ -258,10 +260,12 @@ HRESULT VideoInputFromBlackMagic::VideoInputFrameArrived(IDeckLinkVideoInputFram
       }
 
       //Update the images
-      //Mutex here TODO
-      this->currentImageLeft = loadedImageLeft;
-      this->currentImageRight = loadedImageRight;
+      //Mutex here
+      this->mtxImages.lock();
+      this->currentImageLeft = loadedImageLeft.clone();
+      this->currentImageRight = loadedImageRight.clone();
       this->initialized = true;
+      this->mtxImages.unlock();
 
    }
 
@@ -307,8 +311,9 @@ bool VideoInputFromBlackMagic::isInitialized(){
 
 void VideoInputFromBlackMagic::getFrames(cv::Mat & leftI, cv::Mat & rightI){
 
-   //TODO use mutex !
+   this->mtxImages.lock();
    leftI = this->currentImageLeft.clone();
    rightI = this->currentImageRight.clone();
+   this->mtxImages.unlock();
 
 }

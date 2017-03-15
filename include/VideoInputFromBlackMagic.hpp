@@ -6,6 +6,8 @@
 #include <opencv2/opencv.hpp>
 #include <DeckLinkAPI.h>
 
+#include <mutex>
+
 class VideoInputFromBlackMagic : public IDeckLinkInputCallback {
 
 private:
@@ -36,6 +38,9 @@ private:
    bool running;
    void runInput();
    static void runThread(VideoInputFromBlackMagic* context);
+
+   //Mutex
+   std::mutex mtxImages;
 
 public:
 
