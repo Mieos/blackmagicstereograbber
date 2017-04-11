@@ -11,7 +11,24 @@ find_package(OpenCV REQUIRED)
 #Blackmagic
 message("BlackMagic package: searching")
 if(WIN32)
-   message("Using Windows: not currently supported")
+   
+   message("Using Windows: fix me ")
+   
+   #NOPE FIXME Check Linux version to understand how it works
+   #FIND_PATH( BLACKMAGIC_INCLUDE_DIR DeckLinkAPI.h
+   #   PATHS "external/blackMagicSDK/Win/include/" )
+
+   #TODO FIXME change that with the correct lib
+   #FIND_LIBRARY( BLACKMAGIC_LIBRARY_DIR DeckLinkAPI
+   #   PATHS /usr/lib/
+   #   /usr/local/lib/
+   #   )
+
+   #TODO FIXME same here
+   #set(BLACKMAGIC_LIBRARY_EXT_SRC
+   #   ${CMAKE_CURRENT_SOURCE_DIR}/external/blackMagicSDK/Win/include/Nope.cpp
+   #   )
+
 else (WIN32)
    if(UNIX)
       if(APPLE)
