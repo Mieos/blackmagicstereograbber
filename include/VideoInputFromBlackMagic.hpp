@@ -43,10 +43,14 @@ private:
    std::mutex mtxImages;
    bool updating;
 
+   bool isStereo;
+
 public:
 
    //Constructor & destructors
    VideoInputFromBlackMagic();
+   //Dirty but for now, it will stay like that
+   VideoInputFromBlackMagic(bool istereo);
    ~VideoInputFromBlackMagic();
 
    //Running function
@@ -59,6 +63,7 @@ public:
 
    //Get frames
    void getFrames(cv::Mat & leftI, cv::Mat & rightI);
+   void getFrames(cv::Mat & leftI);
 
    virtual HRESULT STDMETHODCALLTYPE VideoInputFrameArrived(IDeckLinkVideoInputFrame*, IDeckLinkAudioInputPacket*);
    virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, LPVOID *ppv) { return E_NOINTERFACE; }

@@ -69,12 +69,24 @@ bool VideoInputFromBlackMagic::separateFrames(cv::Mat* left, cv::Mat* right, cv:
 //Constructor
 VideoInputFromBlackMagic::VideoInputFromBlackMagic(): m_refCount(1){
 
+   this->isStereo = true;
    this->running = false;
    this->initialized = false;
    this->initCuda = false;
    this->updating = false;
 
 }
+
+VideoInputFromBlackMagic::VideoInputFromBlackMagic(bool isstereo): m_refCount(1){
+
+   this->isStereo = isstereo;
+   this->running = false;
+   this->initialized = false;
+   this->initCuda = false;
+   this->updating = false;
+
+}
+
 
 //Destructor
 //TODO FREE CUDA MEMORY
@@ -107,7 +119,6 @@ void VideoInputFromBlackMagic::runInput(){
 
       //Check result
       HRESULT result;
-
       IDeckLink* deckLink = NULL;
       IDeckLinkInput* g_deckLinkInput = NULL;
       IDeckLinkAttributes* deckLinkAttributes = NULL;
@@ -252,24 +263,39 @@ HRESULT VideoInputFromBlackMagic::VideoInputFrameArrived(IDeckLinkVideoInputFram
       cv::Mat mat = cv::Mat(videoFrame->GetHeight(), videoFrame->GetWidth(), CV_8UC2, data, videoFrame->GetRowBytes());
       cv::cvtColor(mat, loadedImage, CV_YUV2BGR_UYVY);
 
-      cv::Mat loadedImageRight = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type());
-      cv::Mat loadedImageLeft = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type()) ;
-
       if (!loadedImage.data){
          fprintf(stdout,"No frame loaded from the video : mainImage will not be updated\n");
       } else {
 
-         if(!this->separateFrames(&loadedImageLeft, &loadedImageRight, &loadedImage)){
-            fprintf(stdout,"Error while the separation of left and right frame\n");
-         }
 
-         //Update the images
-         //Mutex here
-         this->mtxImages.lock();
-         this->currentImageLeft = loadedImageLeft.clone();
-         this->currentImageRight = loadedImageRight.clone();
-         this->initialized = true;
-         this->mtxImages.unlock();
+         if(this->isStereo){
+
+            cv::Mat loadedImageRight = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type());
+            cv::Mat loadedImageLeft = cv::Mat::zeros(loadedImage.rows,loadedImage.cols, loadedImage.type()) ;
+            
+            if(!this->separateFrames(&loadedImageLeft, &loadedImageRight, &loadedImage)){
+               fprintf(stdout,"Error while the separation of left and right frame\n");
+            }
+
+            //Update the images
+            //Mutex here
+            this->mtxImages.lock();
+            this->currentImageLeft = loadedImageLeft.clone();
+            this->currentImageRight = loadedImageRight.clone();
+            this->initialized = true;
+            this->mtxImages.unlock();
+
+         } else {
+
+            //Update the left image carrefull left image is not updated
+            //Mutex here
+            this->mtxImages.lock();
+            this->currentImageLeft = loadedImage.clone();
+            this->initialized = true;
+            this->mtxImages.unlock();
+
+
+         }
 
 
       }
@@ -323,11 +349,23 @@ bool VideoInputFromBlackMagic::isInitialized(){
    return this->initialized;
 }
 
+//This is dirty... clone (think about it to do it faster)
 void VideoInputFromBlackMagic::getFrames(cv::Mat & leftI, cv::Mat & rightI){
 
+   if(!isStereo){
+      std::cout << "Warning : Using left and right images in monocular mode" << std::endl;
+   }
    this->mtxImages.lock();
    leftI = this->currentImageLeft.clone();
    rightI = this->currentImageRight.clone();
+   this->mtxImages.unlock();
+
+}
+
+void VideoInputFromBlackMagic::getFrames(cv::Mat & leftI){
+
+   this->mtxImages.lock();
+   leftI = this->currentImageLeft.clone();
    this->mtxImages.unlock();
 
 }
