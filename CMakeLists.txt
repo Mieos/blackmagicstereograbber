@@ -11,9 +11,9 @@ find_package(OpenCV REQUIRED)
 #Blackmagic
 message("BlackMagic package: searching")
 if(WIN32)
-   
+
    message("Using Windows: Not supported ")
-   
+
    #NOPE FIXME Check Linux version to understand how it works
    #FIND_PATH( BLACKMAGIC_INCLUDE_DIR DeckLinkAPI.h
    #   PATHS "external/blackMagicSDK/Win/include/" )
@@ -53,23 +53,28 @@ else (WIN32)
       message("Using unrecognize OS : not suported")
    endif(UNIX)
 endif(WIN32)
+
 set( BLACKMAGIC_FOUND FALSE )
 if ( BLACKMAGIC_INCLUDE_DIR AND BLACKMAGIC_LIBRARY_DIR )
+
    SET ( BLACKMAGIC_FOUND TRUE )
    message("BlackMagic found")
+
+   set(ALL_LIBS
+      ${OpenCV_LIBS}
+      )
+
+   #include
+   include_directories(include)
+
+   #Outputs for tests
+   set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+
+   #src
+   add_subdirectory(src)
+
 else ( BLACKMAGIC_INCLUDE_DIR AND BLACKMAGIC_LIBRARY_DIR )
    message("BlackMagic not found")
+   message("Library cannot be used")
 endif ( BLACKMAGIC_INCLUDE_DIR AND BLACKMAGIC_LIBRARY_DIR )
 
-set(ALL_LIBS
-   ${OpenCV_LIBS}
-   )
-
-#include
-include_directories(include)
-
-#Outputs for tests
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
-
-#src
-add_subdirectory(src)
