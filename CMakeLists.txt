@@ -12,7 +12,7 @@ find_package(OpenCV REQUIRED)
 message("BlackMagic package: searching")
 if(WIN32)
    
-   message("Using Windows: fix me ")
+   message("Using Windows: Not supported ")
    
    #NOPE FIXME Check Linux version to understand how it works
    #FIND_PATH( BLACKMAGIC_INCLUDE_DIR DeckLinkAPI.h
