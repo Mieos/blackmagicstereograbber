@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
    std::string saveFolder = "imagesSet";
    boost::filesystem::path dir(saveFolder.c_str());
    if(boost::filesystem::create_directory(dir)) {
-      std::cout << "A new folder has been created for the pictures : " << saveFolder "\n";
+      std::cout << "A new folder has been created for the pictures : " << saveFolder << "\n";
    } else {
       std::cout << "Folder already existing" << std::endl;
    }

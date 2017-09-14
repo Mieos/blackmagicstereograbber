@@ -8,3 +8,11 @@ target_link_libraries(runMono
    blackmagicstereograbber_LIB   
    )
 
+add_executable(runSaveImages mainSaveImages.cpp)
+target_link_libraries(runSaveImages
+   blackmagicstereograbber_LIB  
+   ${Boost_FILESYSTEM_LIBRARY}
+   ${Boost_SYSTEM_LIBRARY}
+   )
+
+
