@@ -15,4 +15,9 @@ target_link_libraries(runSaveImages
    ${Boost_SYSTEM_LIBRARY}
    )
 
-
+add_executable(runSaveImagesInterval mainSaveImagesV.cpp)
+target_link_libraries(runSaveImagesInterval
+   blackmagicstereograbber_LIB  
+   ${Boost_FILESYSTEM_LIBRARY}
+   ${Boost_SYSTEM_LIBRARY}
+   )
